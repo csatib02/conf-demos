@@ -1,0 +1,32 @@
+apiVersion: telemetry.kube-logging.dev/v1alpha1
+kind: Collector
+metadata:
+  name: cluster
+spec:
+  controlNamespace: infra
+  tenantSelector:
+    matchExpressions:
+      - key: tenant
+        operator: Exists
+---
+apiVersion: logging.banzaicloud.io/v1beta1
+kind: Logging
+metadata:
+  name: infra
+  labels:
+    tenant: infra
+spec:
+  loggingRef: infra
+  fluentd:
+    disablePvc: true
+    logLevel: trace
+  controlNamespace: infra
+  watchNamespaceSelector:
+    matchExpressions:
+      - key: tenant
+        operator: Exists
+  routeConfig:
+    enableTelemetryControllerRoute: true
+    disableLoggingRoute: true
+    tenantLabels:
+      tenant: infra

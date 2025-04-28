@@ -1,0 +1,79 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: collector
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    nsSelector: example-tenant
+  name: example-tenant-ns
+---
+apiVersion: telemetry.kube-logging.dev/v1alpha1
+kind: Collector
+metadata:
+  name: example
+spec:
+  controlNamespace: collector
+  tenantSelector:
+    matchLabels:
+      collectorLabel: example
+---
+apiVersion: telemetry.kube-logging.dev/v1alpha1
+kind: Tenant
+metadata:
+  labels:
+    collectorLabel: example
+  name: example-tenant
+spec:
+  subscriptionNamespaceSelectors:
+    - matchLabels:
+        nsSelector: example-tenant
+  logSourceNamespaceSelectors:
+    - matchLabels:
+        nsSelector: example-tenant
+---
+apiVersion: telemetry.kube-logging.dev/v1alpha1
+kind: Subscription
+metadata:
+  name: subscription-sample-1
+  namespace: example-tenant-ns
+spec:
+  condition: "true"
+  outputs:
+    - name: otlp-test-output
+      namespace: example-tenant-ns
+---
+apiVersion: telemetry.kube-logging.dev/v1alpha1
+kind: Subscription
+metadata:
+  name: subscription-sample-2
+  namespace: example-tenant-ns
+spec:
+  condition: "true"
+  outputs:
+    - name: otlp-test-output-2
+      namespace: example-tenant-ns
+---
+apiVersion: telemetry.kube-logging.dev/v1alpha1
+kind: Output
+metadata:
+  name: otlp-test-output
+  namespace: example-tenant-ns
+spec:
+  otlp:
+    endpoint: receiver-collector.telemetry-controller-system.svc.cluster.local:4317
+    tls:
+      insecure: true
+---
+apiVersion: telemetry.kube-logging.dev/v1alpha1
+kind: Output
+metadata:
+  name: otlp-test-output-2
+  namespace: example-tenant-ns
+spec:
+  otlp:
+    endpoint: receiver-collector.telemetry-controller-system.svc.cluster.local:4317
+    tls:
+      insecure: true

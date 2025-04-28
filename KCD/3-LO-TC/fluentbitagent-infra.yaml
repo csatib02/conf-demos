@@ -1,0 +1,28 @@
+apiVersion: logging.banzaicloud.io/v1beta1
+kind: FluentbitAgent
+metadata:
+  name: infra
+spec:
+  loggingRef: infra
+  inputTail:
+    storage.type: filesystem
+  positiondb:
+    hostPath:
+      path: ""
+  bufferStorageVolume:
+    hostPath:
+      path: ""
+  network:
+    connectTimeout: 2
+  metrics: {}
+---
+apiVersion: logging.banzaicloud.io/v1beta1
+kind: LoggingRoute
+metadata:
+  name: tenants
+spec:
+  source: infra
+  targets:
+    matchExpressions:
+      - key: tenant
+        operator: Exists
