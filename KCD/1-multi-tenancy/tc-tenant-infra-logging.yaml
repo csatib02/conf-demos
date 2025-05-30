@@ -34,27 +34,34 @@ metadata:
   namespace: infra
 spec:
   loggingRef: infra
+  filters:
+    - tag_normaliser: {}
+    - parser:
+        remove_key_name_field: true
+        reserve_data: true
+        parse:
+          type: nginx
   match:
   - select:
       labels:
         app.kubernetes.io/name: log-generator
   globalOutputRefs:
-    - http-infra
+    - loki-infra
 ---
 apiVersion: logging.banzaicloud.io/v1beta1
 kind: ClusterOutput
 metadata:
-  name: http-infra
+  name: loki-infra
   namespace: infra
 spec:
   loggingRef: infra
-  http:
-    endpoint: http://test-receiver.infra:8080/infra
-    content_type: application/json
+  loki:
+    url: http://loki-infra.infra.svc.cluster.local:3100
+    configure_kubernetes_labels: true
     buffer:
-      type: memory
-      timekey: 1s
-      timekey_wait: 0s
+      timekey: 1m
+      timekey_wait: 5s
+      timekey_use_utc: true
 ---
 apiVersion: logging.banzaicloud.io/v1beta1
 kind: FluentbitAgent

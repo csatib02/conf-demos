@@ -1,6 +1,13 @@
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: customer-b
+  labels:
+    tenant: customer-b
+---
+apiVersion: v1
+kind: Namespace
+metadata:
   name: customer-a
   labels:
     tenant: customer-a
@@ -36,24 +43,30 @@ metadata:
   name: all
   namespace: customer-a
 spec:
+  filters:
+    - tag_normaliser: {}
+    - parser:
+        remove_key_name_field: true
+        reserve_data: true
+        parse:
+          type: nginx
   match:
   - select:
       labels:
         app.kubernetes.io/name: log-generator
   localOutputRefs:
-    - http-a
+    - loki-customer-a
 ---
 apiVersion: logging.banzaicloud.io/v1beta1
 kind: Output
 metadata:
-  name: http-a
+  name: loki-customer-a
   namespace: customer-a
 spec:
-  http:
-    endpoint: http://logging-operator-test-receiver.logging:8080/customer-a
-    content_type: application/json
-    buffer:
-      type: memory
-      tags: time
-      timekey: 1s
-      timekey_wait: 0s
+ loki:
+   url: http://loki-customer-a.customer-a.svc.cluster.local:3100
+   configure_kubernetes_labels: true
+   buffer:
+     timekey: 1m
+     timekey_wait: 5s
+     timekey_use_utc: true
