@@ -1,3 +1,11 @@
+# Customer-b namespace created here so loki and grafana can be deployed beforehand
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: customer-b
+  labels:
+    tenant: customer-b
+---
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -25,8 +33,8 @@ spec:
     matchLabels:
       tenant: customer-a
   routeConfig:
-    enableTelemetryControllerRoute: true
-    disableLoggingRoute: true
+    enableTelemetryControllerRoute: false
+    disableLoggingRoute: false
     tenantLabels:
       tenant: customer-a
 ---
@@ -44,9 +52,9 @@ spec:
         parse:
           type: nginx
   match:
-  - select:
-      labels:
-        app.kubernetes.io/name: log-generator
+    - select:
+        labels:
+          app.kubernetes.io/name: log-generator
   localOutputRefs:
     - loki-customer-a
 ---
@@ -56,10 +64,10 @@ metadata:
   name: loki-customer-a
   namespace: customer-a
 spec:
- loki:
-   url: http://loki-customer-a.customer-a.svc.cluster.local:3100
-   configure_kubernetes_labels: true
-   buffer:
-     timekey: 1m
-     timekey_wait: 5s
-     timekey_use_utc: true
+  loki:
+    url: http://loki-customer-a.customer-a.svc.cluster.local:3100
+    configure_kubernetes_labels: true
+    buffer:
+      timekey: 10s
+      timekey_wait: 5s
+      timekey_use_utc: true
