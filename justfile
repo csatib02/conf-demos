@@ -12,17 +12,17 @@ editor-config: install-editor-config-checker
     fi
 
 [private]
-bin-dir:
-    @if [ ! -d "./bin" ]; then \
-        echo "Creating bin directory..."; \
-        mkdir -p ./bin; \
-    fi
-
-[private]
 install-editor-config-checker: bin-dir
     @if [ ! -f ./bin/editorconfig-checker ]; then \
         echo "Installing EditorConfig checker... "; \
         GOBIN=$(pwd)/bin go install github.com/editorconfig-checker/editorconfig-checker/v3/cmd/editorconfig-checker@latest; \
     else \
         echo "✅ EditorConfig checker already installed!"; \
+    fi
+
+[private]
+bin-dir:
+    @if [ ! -d "./bin" ]; then \
+        echo "Creating bin directory..."; \
+        mkdir -p ./bin; \
     fi
