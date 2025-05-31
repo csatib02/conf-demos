@@ -59,7 +59,7 @@ spec:
     url: http://loki-infra.infra.svc.cluster.local:3100
     configure_kubernetes_labels: true
     buffer:
-      timekey: 1m
+      timekey: 10s
       timekey_wait: 5s
       timekey_use_utc: true
 ---
