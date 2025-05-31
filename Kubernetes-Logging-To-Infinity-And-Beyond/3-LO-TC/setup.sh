@@ -5,7 +5,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 kubectl config use-context kind-lo
 
 kubectl apply -f "${SCRIPT_DIR}/tc-tenant-b-logging.yaml" \
-              -f "${SCRIPT_DIR}/tc-tenant-infra-logging.yaml" \
+                -f "${SCRIPT_DIR}/tc-tenant-infra-logging.yaml" \
 
 kubectl delete pod -n infra infra-fluentd-0
 

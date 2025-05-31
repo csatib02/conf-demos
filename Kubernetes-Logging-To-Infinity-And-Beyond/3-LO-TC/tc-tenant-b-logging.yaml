@@ -49,10 +49,10 @@ metadata:
   name: loki-customer-b
   namespace: customer-b
 spec:
- loki:
-   url: http://loki-customer-b.customer-b.svc.cluster.local:3100
-   configure_kubernetes_labels: true
-   buffer:
-     timekey: 1m
-     timekey_wait: 5s
-     timekey_use_utc: true
+  loki:
+    url: http://loki-customer-b.customer-b.svc.cluster.local:3100
+    configure_kubernetes_labels: true
+    buffer:
+      timekey: 10s
+      timekey_wait: 5s
+      timekey_use_utc: true
