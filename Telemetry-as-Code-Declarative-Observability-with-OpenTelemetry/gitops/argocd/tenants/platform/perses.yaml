@@ -1,0 +1,44 @@
+apiVersion: perses.dev/v1alpha1
+kind: Perses
+metadata:
+  name: perses
+  namespace: monitoring
+  labels:
+    perses.dev/project: sreday
+spec:
+  metadata:
+    labels:
+      perses.dev/project: sreday
+  replicas: 1
+  image: persesdev/perses:v0.52.0
+  containerPort: 8080
+  config:
+    database:
+      file:
+        folder: /perses
+        extension: yaml
+  service:
+    name: perses
+    annotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "8080"
+  livenessProbe:
+    httpGet:
+      path: /api/health
+      port: 8080
+    initialDelaySeconds: 15
+    periodSeconds: 10
+    timeoutSeconds: 5
+    successThreshold: 1
+    failureThreshold: 3
+  readinessProbe:
+    httpGet:
+      path: /api/health
+      port: 8080
+    initialDelaySeconds: 10
+    periodSeconds: 5
+    timeoutSeconds: 3
+    successThreshold: 1
+    failureThreshold: 3
+  storage:
+    size: 5Gi

@@ -1,0 +1,303 @@
+apiVersion: perses.dev/v1alpha1
+kind: PersesDashboard
+metadata:
+  name: marketing-button-clicks
+  namespace: monitoring
+  labels:
+    perses.dev/project: sreday
+spec:
+  display:
+    name: 🎯 Marketing Button Analytics
+    description: Real-time monitoring of button clicks and malfunction detection
+  duration: 1h
+  refreshInterval: 30s
+  panels:
+    total_clicks_stat:
+      kind: Panel
+      spec:
+        display:
+          name: Total Button Clicks
+        plugin:
+          kind: StatChart
+          spec:
+            calculation: last
+        queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  query: button_clicks_total
+    green_clicks_stat:
+      kind: Panel
+      spec:
+        display:
+          name: Green Button Clicks
+        plugin:
+          kind: StatChart
+          spec:
+            calculation: last
+        queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  query: green_button_clicks_total
+    blue_clicks_stat:
+      kind: Panel
+      spec:
+        display:
+          name: Blue Button Clicks
+        plugin:
+          kind: StatChart
+          spec:
+            calculation: last
+        queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  query: blue_button_clicks_total
+    malfunction_count_stat:
+      kind: Panel
+      spec:
+        display:
+          name: ⚠️ Detected Malfunctions
+        plugin:
+          kind: StatChart
+          spec:
+            calculation: last
+        queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  query: button_clicks_total - (green_button_clicks_total + blue_button_clicks_total)
+                  seriesNameFormat: Untracked Clicks
+    click_rate_chart:
+      kind: Panel
+      spec:
+        display:
+          name: Button Click Rate (clicks/sec)
+        plugin:
+          kind: TimeSeriesChart
+          spec:
+            legend:
+              position: right
+        queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  query: rate(button_clicks_total[5m])
+                  seriesNameFormat: Total Clicks
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  query: rate(green_button_clicks_total[5m])
+                  seriesNameFormat: Green Button
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  query: rate(blue_button_clicks_total[5m])
+                  seriesNameFormat: Blue Button
+    button_distribution_pie:
+      kind: Panel
+      spec:
+        display:
+          name: Click Distribution by Button
+        plugin:
+          kind: PieChart
+          spec:
+            calculation: last
+            radius: 0.8
+        queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  query: green_button_clicks_total
+                  seriesNameFormat: Green Button
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  query: blue_button_clicks_total
+                  seriesNameFormat: Blue Button
+    button_comparison_bar:
+      kind: Panel
+      spec:
+        display:
+          name: Button Performance Comparison
+        plugin:
+          kind: BarChart
+          spec:
+            calculation: last
+        queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  query: green_button_clicks_total
+                  seriesNameFormat: Green Button
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  query: blue_button_clicks_total
+                  seriesNameFormat: Blue Button
+    malfunction_rate_chart:
+      kind: Panel
+      spec:
+        display:
+          name: Malfunction Detection (Untracked Clicks)
+        plugin:
+          kind: TimeSeriesChart
+          spec:
+            legend:
+              position: bottom
+        queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  query: button_clicks_total - (green_button_clicks_total + blue_button_clicks_total)
+                  seriesNameFormat: Potential Malfunctions
+    green_percentage_gauge:
+      kind: Panel
+      spec:
+        display:
+          name: Green Button Click Rate %
+        plugin:
+          kind: GaugeChart
+          spec:
+            calculation: last
+            max: 100
+        queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  query: (green_button_clicks_total / button_clicks_total) * 100
+                  seriesNameFormat: Green %
+    blue_percentage_gauge:
+      kind: Panel
+      spec:
+        display:
+          name: Blue Button Click Rate %
+        plugin:
+          kind: GaugeChart
+          spec:
+            calculation: last
+            max: 100
+        queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  query: (blue_button_clicks_total / button_clicks_total) * 100
+                  seriesNameFormat: Blue %
+  layouts:
+    - kind: Grid
+      spec:
+        display:
+          title: 📊 Key Metrics Overview
+          collapse:
+            open: true
+        items:
+          - x: 0
+            y: 0
+            width: 6
+            height: 5
+            content:
+              $ref: "#/spec/panels/total_clicks_stat"
+          - x: 6
+            y: 0
+            width: 6
+            height: 5
+            content:
+              $ref: "#/spec/panels/green_clicks_stat"
+          - x: 12
+            y: 0
+            width: 6
+            height: 5
+            content:
+              $ref: "#/spec/panels/blue_clicks_stat"
+          - x: 18
+            y: 0
+            width: 6
+            height: 5
+            content:
+              $ref: "#/spec/panels/malfunction_count_stat"
+    - kind: Grid
+      spec:
+        display:
+          title: 📈 Click Trends & Performance
+          collapse:
+            open: true
+        items:
+          - x: 0
+            y: 0
+            width: 16
+            height: 7
+            content:
+              $ref: "#/spec/panels/click_rate_chart"
+          - x: 16
+            y: 0
+            width: 8
+            height: 7
+            content:
+              $ref: "#/spec/panels/button_distribution_pie"
+    - kind: Grid
+      spec:
+        display:
+          title: 🎯 Button Performance Analysis
+          collapse:
+            open: true
+        items:
+          - x: 0
+            y: 0
+            width: 8
+            height: 6
+            content:
+              $ref: "#/spec/panels/green_percentage_gauge"
+          - x: 8
+            y: 0
+            width: 8
+            height: 6
+            content:
+              $ref: "#/spec/panels/blue_percentage_gauge"
+          - x: 16
+            y: 0
+            width: 8
+            height: 6
+            content:
+              $ref: "#/spec/panels/button_comparison_bar"
+    - kind: Grid
+      spec:
+        display:
+          title: ⚠️ Malfunction Detection
+          collapse:
+            open: true
+        items:
+          - x: 0
+            y: 0
+            width: 24
+            height: 7
+            content:
+              $ref: "#/spec/panels/malfunction_rate_chart"

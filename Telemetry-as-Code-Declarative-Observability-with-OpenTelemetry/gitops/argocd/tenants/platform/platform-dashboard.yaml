@@ -1,0 +1,292 @@
+apiVersion: perses.dev/v1alpha1
+kind: PersesDashboard
+metadata:
+  name: telemetry-controller-overview
+  namespace: monitoring
+  labels:
+    perses.dev/project: sreday
+spec:
+  display:
+    name: 🚀 Telemetry Controller - SREDay
+    description: Real-time monitoring of multi-tenant telemetry pipelines with OpenTelemetry Collector
+  duration: 1h
+  refreshInterval: 30s
+  variables:
+    - kind: ListVariable
+      spec:
+        name: tenant
+        display:
+          name: Tenant
+          description: Filter by tenant
+          hidden: false
+        allowAllValue: true
+        allowMultiple: true
+        plugin:
+          kind: PrometheusLabelValuesVariable
+          spec:
+            labelName: tenant
+            matchers:
+              - telemetry_controller_tenant_log_count_total
+    - kind: ListVariable
+      spec:
+        name: subscription
+        display:
+          name: Subscription
+          description: Filter by subscription
+          hidden: false
+        allowAllValue: true
+        allowMultiple: true
+        plugin:
+          kind: PrometheusLabelValuesVariable
+          spec:
+            labelName: subscription
+            matchers:
+              - telemetry_controller_output_log_count_total
+    - kind: ListVariable
+      spec:
+        name: output
+        display:
+          name: Output
+          description: Filter by output
+          hidden: false
+        allowAllValue: true
+        allowMultiple: true
+        plugin:
+          kind: PrometheusLabelValuesVariable
+          spec:
+            labelName: exporter
+            matchers:
+              - otelcol_exporter_sent_log_records_bytes_total
+  panels:
+    active_tenants_stat:
+      kind: Panel
+      spec:
+        display:
+          name: Active Tenants
+        plugin:
+          kind: StatChart
+          spec:
+            calculation: last
+        queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  query: count(count by (tenant) (telemetry_controller_tenant_log_count_total))
+    bytes_per_log_gauge:
+      kind: Panel
+      spec:
+        display:
+          name: Average Bytes per Log
+        plugin:
+          kind: GaugeChart
+          spec:
+            calculation: last
+            max: 10000
+        queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  query: sum(otelcol_exporter_sent_log_records_bytes_total) / sum(telemetry_controller_tenant_log_count_total)
+                  seriesNameFormat: Average Bytes per Log
+        links: []
+    bytes_rate_chart:
+      kind: Panel
+      spec:
+        display:
+          name: Data Export Rate by Exporter (bytes/sec)
+        plugin:
+          kind: TimeSeriesChart
+          spec:
+            legend:
+              position: right
+        queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  query: rate(otelcol_exporter_sent_log_records_bytes_total[5m])
+                  seriesNameFormat: "{{exporter}}"
+    log_rate_chart:
+      kind: Panel
+      spec:
+        display:
+          name: Log Ingestion Rate by Tenant (logs/sec)
+        plugin:
+          kind: TimeSeriesChart
+          spec:
+            legend:
+              position: right
+        queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  query: rate(telemetry_controller_tenant_log_count_total{tenant=~"$tenant"}[5m])
+                  seriesNameFormat: "{{tenant}}"
+    output_by_subscription:
+      kind: Panel
+      spec:
+        display:
+          name: Output Logs by Subscription
+        plugin:
+          kind: TimeSeriesChart
+          spec:
+            legend:
+              position: right
+        queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  query: telemetry_controller_output_log_count_total{tenant=~"$tenant"}
+                  seriesNameFormat: "{{subscription}} ({{tenant}})"
+    tenant_comparison:
+      kind: Panel
+      spec:
+        display:
+          name: Tenant Log Volume Comparison
+        plugin:
+          kind: BarChart
+          spec:
+            calculation: last
+        queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  query: sum by (tenant) (telemetry_controller_tenant_log_count_total)
+                  seriesNameFormat: "{{tenant}}"
+    tenant_distribution:
+      kind: Panel
+      spec:
+        display:
+          name: Tenant Log Distribution
+        plugin:
+          kind: TimeSeriesChart
+          spec:
+            legend:
+              position: bottom
+        queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  query: telemetry_controller_tenant_log_count_total{tenant=~"$tenant"}
+                  seriesNameFormat: "{{tenant}}"
+    total_bytes_stat:
+      kind: Panel
+      spec:
+        display:
+          name: Total Data Exported (Bytes)
+        plugin:
+          kind: StatChart
+          spec:
+            calculation: last
+        queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  query: sum(otelcol_exporter_sent_log_records_bytes_total)
+    total_logs_stat:
+      kind: Panel
+      spec:
+        display:
+          name: Total Logs Processed
+        plugin:
+          kind: StatChart
+          spec:
+            calculation: last
+        queries:
+          - kind: TimeSeriesQuery
+            spec:
+              plugin:
+                kind: PrometheusTimeSeriesQuery
+                spec:
+                  query: sum(telemetry_controller_tenant_log_count_total)
+  layouts:
+    - kind: Grid
+      spec:
+        display:
+          title: 📊 Overview Metrics
+          collapse:
+            open: true
+        items:
+          - x: 0
+            y: 0
+            width: 6
+            height: 5
+            content:
+              $ref: "#/spec/panels/total_logs_stat"
+          - x: 6
+            y: 0
+            width: 6
+            height: 5
+            content:
+              $ref: "#/spec/panels/total_bytes_stat"
+          - x: 12
+            y: 0
+            width: 6
+            height: 5
+            content:
+              $ref: "#/spec/panels/active_tenants_stat"
+          - x: 18
+            y: 0
+            width: 6
+            height: 5
+            content:
+              $ref: "#/spec/panels/bytes_per_log_gauge"
+    - kind: Grid
+      spec:
+        display:
+          title: 📈 Real-time Rates
+          collapse:
+            open: true
+        items:
+          - x: 0
+            y: 0
+            width: 12
+            height: 7
+            content:
+              $ref: "#/spec/panels/log_rate_chart"
+          - x: 12
+            y: 0
+            width: 12
+            height: 7
+            content:
+              $ref: "#/spec/panels/bytes_rate_chart"
+    - kind: Grid
+      spec:
+        display:
+          title: 🔍 Tenant Analysis
+          collapse:
+            open: true
+        items:
+          - x: 0
+            y: 0
+            width: 12
+            height: 7
+            content:
+              $ref: "#/spec/panels/tenant_distribution"
+          - x: 12
+            y: 0
+            width: 12
+            height: 7
+            content:
+              $ref: "#/spec/panels/output_by_subscription"
+          - x: 0
+            y: 7
+            width: 24
+            height: 7
+            content:
+              $ref: "#/spec/panels/tenant_comparison"

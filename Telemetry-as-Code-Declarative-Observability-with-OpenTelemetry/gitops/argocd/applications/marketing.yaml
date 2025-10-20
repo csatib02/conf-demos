@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: marketing
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/csatib02/conf-demos
+    targetRevision: HEAD
+    path: Telemetry-as-Code-Declarative-Observability-with-OpenTelemetry/gitops/argocd/tenants/marketing
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: marketing
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m

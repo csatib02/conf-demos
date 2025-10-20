@@ -1,0 +1,23 @@
+# Platform tenant is interested in collecting all logs from their workloads
+apiVersion: telemetry.kube-logging.dev/v1alpha1
+kind: Subscription
+metadata:
+  name: platform-subscription
+  namespace: platform
+spec:
+  condition: "true"
+  outputs:
+  - name: platform-output
+    namespace: platform
+---
+# They want to send their logs to loki.
+apiVersion: telemetry.kube-logging.dev/v1alpha1
+kind: Output
+metadata:
+  name: platform-output
+  namespace: platform
+spec:
+  otlphttp:
+    endpoint: http://loki.monitoring.svc.cluster.local:3100/otlp/
+    tls:
+      insecure: true

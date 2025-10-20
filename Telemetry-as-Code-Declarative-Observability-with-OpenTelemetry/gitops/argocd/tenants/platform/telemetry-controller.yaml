@@ -1,0 +1,57 @@
+apiVersion: telemetry.kube-logging.dev/v1alpha1
+kind: Collector
+metadata:
+  name: cluster
+spec:
+  controlNamespace: collector
+  tenantSelector:
+    matchLabels:
+      collect: "true"
+---
+apiVersion: telemetry.kube-logging.dev/v1alpha1
+kind: Tenant
+metadata:
+  labels:
+    collect: "true"
+  name: ingress
+spec:
+  transform:
+    name: parse-nginx
+    flattenData: true
+    logStatements:
+      - context: log
+        statements:
+          # Example log line:
+          # "GET /api/click/blue HTTP/1.1" 200 75 "http://frontend.local/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:143.0) Gecko/20100101 Firefox/143.0" 313 0.002 [frontend-frontend-8080] [] 10.244.0.61:8080 75 0.002 200 c2e67709723d5eb8466527075f752b55
+
+          # Extract fields from nginx access log by splitting on double quotes
+          - set(resource.attributes["request_line"], Split(body, "\"")[1]) where Len(Split(body, "\"")) > 1
+          - set(resource.attributes["referer"], Split(body, "\"")[3]) where Len(Split(body, "\"")) > 3
+          - set(resource.attributes["user_agent"], Split(body, "\"")[5]) where Len(Split(body, "\"")) > 5
+
+          # Extract HTTP method and path from request line
+          - set(resource.attributes["http_method"], Split(resource.attributes["request_line"], " ")[0]) where resource.attributes["request_line"] != nil
+          - set(resource.attributes["http_path"], Split(resource.attributes["request_line"], " ")[1]) where resource.attributes["request_line"] != nil
+
+          # Extract hostname from referer URL
+          # "http://frontend.local/" -> "frontend.local"
+          - set(resource.attributes["host_with_slash"], Split(resource.attributes["referer"], "://")[1]) where resource.attributes["referer"] != nil and resource.attributes["referer"] != "-"
+          - set(resource.attributes["host"], Split(resource.attributes["host_with_slash"], "/")[0]) where resource.attributes["host_with_slash"] != nil
+  logSourceNamespaceSelectors:
+    - matchLabels:
+        kubernetes.io/metadata.name: ingress-nginx
+
+# The following ConfigMap can be used to configure nginx to emit access logs in a custom format
+# apiVersion: v1
+# kind: ConfigMap
+# metadata:
+#   labels:
+#     app.kubernetes.io/component: controller
+#     app.kubernetes.io/instance: ingress-nginx
+#   name: ingress-nginx-controller
+#   namespace: ingress-nginx
+# data:
+#   hsts: "false"
+#   log-format-upstream: '[$time_iso8601, $proxy_protocol_addr, $proxy_add_x_forwarded_for,
+#     $req_id, $remote_user, $bytes_sent, $request_time, $status, $host, $server_protocol,
+#     $uri, $args, $request_length, $request_time, $request_method, $http_referer, $http_user_agent]'

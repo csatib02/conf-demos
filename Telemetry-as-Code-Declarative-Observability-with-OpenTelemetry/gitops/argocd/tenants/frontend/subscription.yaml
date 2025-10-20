@@ -1,0 +1,24 @@
+# The frontend tenant is interested in collecting all logs from their workloads
+# and also wants to receive logs from the ingress tenant that are destined to their frontend application.
+apiVersion: telemetry.kube-logging.dev/v1alpha1
+kind: Subscription
+metadata:
+  name: frontend-subscription
+  namespace: frontend
+spec:
+  condition: "true"
+  outputs:
+  - name: frontend-output
+    namespace: frontend
+---
+# They want to store their logs in a file and read it with their own service.
+apiVersion: telemetry.kube-logging.dev/v1alpha1
+kind: Output
+metadata:
+  name: frontend-output
+  namespace: frontend
+spec:
+  file:
+    path: "/var/log/containers/frontend-logs.log"
+    append: true
+    format: "json"

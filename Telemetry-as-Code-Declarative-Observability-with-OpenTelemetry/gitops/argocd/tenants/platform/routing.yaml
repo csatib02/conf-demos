@@ -1,0 +1,8 @@
+apiVersion: telemetry.kube-logging.dev/v1alpha1
+kind: Bridge
+metadata:
+  name: ingress-frontend
+spec:
+  sourceTenant: ingress
+  targetTenant: team-frontend
+  condition: 'attributes["host"] == "frontend.local"'

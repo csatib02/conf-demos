@@ -1,0 +1,37 @@
+apiVersion: telemetry.kube-logging.dev/v1alpha1
+kind: Tenant
+metadata:
+  name: team-frontend
+  labels:
+    team: frontend
+    collect: "true"
+spec:
+  persistenceConfig:
+    enableFileStorage: true
+  subscriptionNamespaceSelectors:
+  - matchLabels:
+      nsSelector: team-frontend
+  logSourceNamespaceSelectors:
+  - matchLabels:
+      nsSelector: team-frontend
+---
+apiVersion: telemetry.kube-logging.dev/v1alpha1
+kind: Tenant
+metadata:
+  name: team-platform
+  labels:
+    team: platform
+    collect: "true"
+spec:
+  persistenceConfig:
+    enableFileStorage: true
+  subscriptionNamespaceSelectors:
+  - matchLabels:
+      nsSelector: team-platform
+  logSourceNamespaceSelectors:
+  - matchLabels:
+      kubernetes.io/metadata.name: ingress-nginx
+  - matchLabels:
+      kubernetes.io/metadata.name: argocd
+  - matchLabels:
+      kubernetes.io/metadata.name: monitoring

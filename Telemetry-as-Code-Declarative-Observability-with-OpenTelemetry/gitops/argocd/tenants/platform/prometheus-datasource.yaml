@@ -1,0 +1,16 @@
+apiVersion: perses.dev/v1alpha1
+kind: PersesDatasource
+metadata:
+  name: prometheus-local
+  namespace: monitoring
+  labels:
+    perses.dev/project: sreday
+spec:
+  config:
+    display:
+      name: Prometheus
+    default: true
+    plugin:
+      kind: PrometheusDatasource
+      spec:
+        directUrl: http://prometheus.local
