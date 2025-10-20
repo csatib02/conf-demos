@@ -7,7 +7,7 @@ metadata:
     perses.dev/project: sreday
 spec:
   display:
-    name: 🚀 Telemetry Controller - SREDay
+    name: Telemetry Controller - SREDay
     description: Real-time monitoring of multi-tenant telemetry pipelines with OpenTelemetry Collector
   duration: 1h
   refreshInterval: 30s
@@ -218,7 +218,7 @@ spec:
     - kind: Grid
       spec:
         display:
-          title: 📊 Overview Metrics
+          title: Overview Metrics
           collapse:
             open: true
         items:
@@ -249,7 +249,7 @@ spec:
     - kind: Grid
       spec:
         display:
-          title: 📈 Real-time Rates
+          title: Real-time Rates
           collapse:
             open: true
         items:
@@ -268,7 +268,7 @@ spec:
     - kind: Grid
       spec:
         display:
-          title: 🔍 Tenant Analysis
+          title: Tenant Analysis
           collapse:
             open: true
         items:

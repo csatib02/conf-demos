@@ -3,6 +3,8 @@ kind: Collector
 metadata:
   name: cluster
 spec:
+  debug: true
+  dryRunMode: true
   controlNamespace: collector
   tenantSelector:
     matchLabels:
@@ -15,6 +17,8 @@ metadata:
     collect: "true"
   name: ingress
 spec:
+  persistenceConfig:
+    enableFileStorage: true
   transform:
     name: parse-nginx
     flattenData: true

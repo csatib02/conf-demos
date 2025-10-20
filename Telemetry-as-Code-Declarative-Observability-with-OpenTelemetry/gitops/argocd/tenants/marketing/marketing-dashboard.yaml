@@ -7,7 +7,7 @@ metadata:
     perses.dev/project: sreday
 spec:
   display:
-    name: 🎯 Marketing Button Analytics
+    name: Marketing Button Analytics
     description: Real-time monitoring of button clicks and malfunction detection
   duration: 1h
   refreshInterval: 30s
@@ -64,7 +64,7 @@ spec:
       kind: Panel
       spec:
         display:
-          name: ⚠️ Detected Malfunctions
+          name: Detected Malfunctions
         plugin:
           kind: StatChart
           spec:
@@ -216,7 +216,7 @@ spec:
     - kind: Grid
       spec:
         display:
-          title: 📊 Key Metrics Overview
+          title: Key Metrics Overview
           collapse:
             open: true
         items:
@@ -266,7 +266,7 @@ spec:
     - kind: Grid
       spec:
         display:
-          title: 🎯 Button Performance Analysis
+          title: Button Performance Analysis
           collapse:
             open: true
         items:
@@ -291,7 +291,7 @@ spec:
     - kind: Grid
       spec:
         display:
-          title: ⚠️ Malfunction Detection
+          title: Malfunction Detection
           collapse:
             open: true
         items:
