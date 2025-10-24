@@ -1,0 +1,33 @@
+# Don't forget to add the hosts to /etc/hosts:
+# 127.0.0.1 frontend.local logs.frontend.local
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: frontend-ingress
+  namespace: frontend
+  labels:
+    app: frontend
+    team: frontend
+spec:
+  ingressClassName: nginx
+  rules:
+  - host: frontend.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port:
+              number: 8080
+  - host: logs.frontend.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port:
+              number: 8081
