@@ -5,4 +5,4 @@ metadata:
 spec:
   sourceTenant: ingress
   targetTenant: team-frontend
-  condition: 'attributes["host"] == "frontend.local"'
+  condition: 'attributes["server.address"] == "frontend.local"'

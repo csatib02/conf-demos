@@ -25,22 +25,24 @@ spec:
     logStatements:
       - context: log
         statements:
-          # Example log line:
-          # "GET /api/click/blue HTTP/1.1" 200 75 "http://frontend.local/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:143.0) Gecko/20100101 Firefox/143.0" 313 0.002 [frontend-frontend-8080] [] 10.244.0.61:8080 75 0.002 200 c2e67709723d5eb8466527075f752b55
+        - set(cache["body_str"], Decode(body, "utf-8"))
 
-          # Extract fields from nginx access log by splitting on double quotes
-          - set(resource.attributes["request_line"], Split(body, "\"")[1]) where Len(Split(body, "\"")) > 1
-          - set(resource.attributes["referer"], Split(body, "\"")[3]) where Len(Split(body, "\"")) > 3
-          - set(resource.attributes["user_agent"], Split(body, "\"")[5]) where Len(Split(body, "\"")) > 5
+        # Parse nginx access log format
+        # Example: "GET /api/click/blue HTTP/1.1" 200 75 "http://frontend.local/" "Mozilla/5.0..." 313 0.002 [frontend-frontend-8080] [] 10.244.0.61:8080 75 0.002 200 c2e67709723d5eb8466527075f752b55
 
-          # Extract HTTP method and path from request line
-          - set(resource.attributes["http_method"], Split(resource.attributes["request_line"], " ")[0]) where resource.attributes["request_line"] != nil
-          - set(resource.attributes["http_path"], Split(resource.attributes["request_line"], " ")[1]) where resource.attributes["request_line"] != nil
+        - set(cache["request_line"], Split(cache["body_str"], "\"")[1]) where IsMatch(cache["body_str"], "\"")
+        - set(cache["referer"], Split(cache["body_str"], "\"")[3]) where Len(Split(cache["body_str"], "\"")) > 3
+        - set(cache["user_agent"], Split(cache["body_str"], "\"")[5]) where Len(Split(cache["body_str"], "\"")) > 5
+        - set(log.attributes["user_agent.original"], cache["user_agent"]) where cache["user_agent"] != nil and cache["user_agent"] != "-"
 
-          # Extract hostname from referer URL
-          # "http://frontend.local/" -> "frontend.local"
-          - set(resource.attributes["host_with_slash"], Split(resource.attributes["referer"], "://")[1]) where resource.attributes["referer"] != nil and resource.attributes["referer"] != "-"
-          - set(resource.attributes["host"], Split(resource.attributes["host_with_slash"], "/")[0]) where resource.attributes["host_with_slash"] != nil
+        # Example: "GET /api/click/blue HTTP/1.1"
+        - set(log.attributes["http.request.method"], Split(cache["request_line"], " ")[0]) where cache["request_line"] != nil
+        - set(log.attributes["url.path"], Split(cache["request_line"], " ")[1]) where cache["request_line"] != nil
+
+        # Example: "http://frontend.local/" -> extract scheme and server address
+        - set(log.attributes["url.scheme"], Split(cache["referer"], "://")[0]) where cache["referer"] != nil and cache["referer"] != "-" and IsMatch(cache["referer"], "://")
+        - set(cache["host_with_path"], Split(cache["referer"], "://")[1]) where cache["referer"] != nil and cache["referer"] != "-" and IsMatch(cache["referer"], "://")
+        - set(log.attributes["server.address"], Split(cache["host_with_path"], "/")[0]) where cache["host_with_path"] != nil
   logSourceNamespaceSelectors:
     - matchLabels:
         kubernetes.io/metadata.name: ingress-nginx
