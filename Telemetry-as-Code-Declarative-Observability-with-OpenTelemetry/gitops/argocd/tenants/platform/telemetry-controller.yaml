@@ -3,8 +3,8 @@ kind: Collector
 metadata:
   name: cluster
 spec:
-  debug: true
-  dryRunMode: true
+  # debug: true
+  # dryRunMode: true
   controlNamespace: collector
   tenantSelector:
     matchLabels:
@@ -24,7 +24,7 @@ spec:
     flattenData: true
     logStatements:
       - context: log
-        statements:
+        statements: # grep 'host: Str(frontend.local)' -C 5
           # Example log line:
           # "GET /api/click/blue HTTP/1.1" 200 75 "http://frontend.local/" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:143.0) Gecko/20100101 Firefox/143.0" 313 0.002 [frontend-frontend-8080] [] 10.244.0.61:8080 75 0.002 200 c2e67709723d5eb8466527075f752b55
 
