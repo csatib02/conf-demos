@@ -27,7 +27,7 @@ spec:
               plugin:
                 kind: PrometheusTimeSeriesQuery
                 spec:
-                  query: button_clicks_total
+                  query: green_button_clicks_total + blue_button_clicks_total
     green_clicks_stat:
       kind: Panel
       spec:
@@ -75,8 +75,8 @@ spec:
               plugin:
                 kind: PrometheusTimeSeriesQuery
                 spec:
-                  query: button_clicks_total - (green_button_clicks_total + blue_button_clicks_total)
-                  seriesNameFormat: Untracked Clicks
+                  query: malfunctions_total
+                  seriesNameFormat: Detected Malfunctions
     click_rate_chart:
       kind: Panel
       spec:
@@ -93,7 +93,7 @@ spec:
               plugin:
                 kind: PrometheusTimeSeriesQuery
                 spec:
-                  query: rate(button_clicks_total[5m])
+                  query: rate((green_button_clicks_total + blue_button_clicks_total)[5m])
                   seriesNameFormat: Total Clicks
           - kind: TimeSeriesQuery
             spec:
@@ -174,7 +174,7 @@ spec:
               plugin:
                 kind: PrometheusTimeSeriesQuery
                 spec:
-                  query: button_clicks_total - (green_button_clicks_total + blue_button_clicks_total)
+                  query: malfunctions_total
                   seriesNameFormat: Potential Malfunctions
     green_percentage_gauge:
       kind: Panel
@@ -192,7 +192,7 @@ spec:
               plugin:
                 kind: PrometheusTimeSeriesQuery
                 spec:
-                  query: (green_button_clicks_total / button_clicks_total) * 100
+                  query: (green_button_clicks_total / (green_button_clicks_total + blue_button_clicks_total)) * 100
                   seriesNameFormat: Green %
     blue_percentage_gauge:
       kind: Panel
@@ -210,7 +210,7 @@ spec:
               plugin:
                 kind: PrometheusTimeSeriesQuery
                 spec:
-                  query: (blue_button_clicks_total / button_clicks_total) * 100
+                  query: (blue_button_clicks_total / (green_button_clicks_total + blue_button_clicks_total)) * 100
                   seriesNameFormat: Blue %
   layouts:
     - kind: Grid

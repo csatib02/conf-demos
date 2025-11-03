@@ -47,7 +47,12 @@ setup_tunnel() {
         log "Existing Minikube tunnel process killed."
     fi
 
-    sudo minikube tunnel --profile ${CLUSTER_NAME} > /dev/null 2>&1 &
+    if ! sudo -v; then
+        warn "sudo authentication failed"
+        exit 1
+    fi
+
+    sudo minikube tunnel --profile "${CLUSTER_NAME}" > /dev/null 2>&1 &
 }
 
 deploy_argocd() {
@@ -69,6 +74,7 @@ deploy_observability() {
 
     log "Installing Loki..."
     helm upgrade --install loki grafana/loki \
+        --version 6.44.0 \
         --namespace monitoring \
         --create-namespace \
         -f "${SCRIPT_DIR}/loki-values.yaml" \

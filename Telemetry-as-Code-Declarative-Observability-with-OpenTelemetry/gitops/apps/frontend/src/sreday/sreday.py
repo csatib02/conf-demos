@@ -21,9 +21,9 @@ MALFUNCTION_RATE = 0.1
 
 registry = CollectorRegistry()
 
-button_clicks_total = Counter(
-	'button_clicks_total',
-	'Total number of all button clicks',
+malfunctions_total = Counter(
+	'malfunctions_total',
+	'Total number of button malfunctions',
 	registry=registry,
 )
 
@@ -69,12 +69,16 @@ def index():
 
 @app.route('/api/click/<variant>')
 def handle_click(variant):
-	button_clicks_total.inc()
-
 	if variant not in ['green', 'blue']:
 		return jsonify({"error": "Invalid variant"}), 400
 
+	if variant == 'green':
+		green_button_clicks_total.inc()
+	elif variant == 'blue':
+		blue_button_clicks_total.inc()
+
 	if random.random() < MALFUNCTION_RATE:
+		malfunctions_total.inc()
 		malfunction_message = random.choice(MALFUNCTION_MESSAGES)
 		log(variant, 500, f"Malfunction: {malfunction_message}")
 		return jsonify({
@@ -83,11 +87,6 @@ def handle_click(variant):
 			"message": malfunction_message
 		}), 500
 	log(variant, 200, f"Successful {variant} button click")
-
-	if variant == 'green':
-		green_button_clicks_total.inc()
-	elif variant == 'blue':
-		blue_button_clicks_total.inc()
 
 	return jsonify({
 		"success": True,
