@@ -1,0 +1,16 @@
+[package]
+name = "scaff"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.95"
+description = "Scaffold a conf-demo talk directory"
+license = "Apache-2.0"
+repository = "https://github.com/csatib02/conf-demos"
+
+[profile.release]
+strip = true
+
+[dependencies]
+
+[dev-dependencies]
+tempfile = "3"
