@@ -2,7 +2,35 @@
 default:
     @just --list
 
-verify: editor-config
+# Run all checks (editorconfig + Rust fmt/lint/test)
+verify: editor-config fmt-check lint test
+
+# Scaffold a new talk dir at the repo root
+new title venue="" steps="0":
+    cargo run --quiet --manifest-path tools/scaff/Cargo.toml -- "{{title}}" --venue "{{venue}}" --steps {{steps}}
+
+# Format Rust code
+fmt:
+    cargo fmt --manifest-path tools/scaff/Cargo.toml
+
+# Run clippy lints
+lint:
+    @echo "Running clippy..."
+    cargo clippy --manifest-path tools/scaff/Cargo.toml --all-targets -- -D warnings
+
+# Run Rust tests
+test:
+    @echo "Running Rust tests..."
+    cargo test --manifest-path tools/scaff/Cargo.toml --all-targets
+
+# Build the release binary
+build:
+    cargo build --manifest-path tools/scaff/Cargo.toml --release
+
+[private]
+fmt-check:
+    @echo "Checking Rust formatting..."
+    cargo fmt --manifest-path tools/scaff/Cargo.toml --check
 
 [private]
 editor-config: install-editor-config-checker
