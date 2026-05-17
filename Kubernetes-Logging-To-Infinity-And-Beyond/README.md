@@ -17,4 +17,4 @@ The presentation includes technical demonstrations and architectural insights fo
 ## Presented at
 
 - April 24, 2025 @ [KCD Budapest](https://community.cncf.io/events/details/cncf-kcd-budapest-presents-kcd-budapest-2025/)
-- June 5, 2025 @ [KCD Bratislava](https://community.cncf.io/events/details/cncf-kcd-czech-slovak-presents-kcd-czech-amp-slovak-bratislava-2025/)
+- June 5, 2025 @ [KCD Czech & Slovak - Bratislava](https://community.cncf.io/events/details/cncf-kcd-czech-slovak-presents-kcd-czech-amp-slovak-bratislava-2025/)
