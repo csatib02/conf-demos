@@ -113,11 +113,23 @@ fn setup_script_skeleton() -> String {
 
 fn pre_setup_script_skeleton(venue: Option<&str>) -> Result<String, Box<dyn std::error::Error>> {
     let cluster_name = match venue {
-        Some(v) => title_to_dirname(v)?.to_lowercase(),
+        Some(v) => format!("{}-demo", title_to_dirname(v)?.to_lowercase()),
         None => "TODO-CLUSTER".to_string(),
     };
     let body = PRE_SETUP_BODY.replace("TODO-CLUSTER", &cluster_name);
     Ok(format!("{SCRIPT_PREAMBLE}{body}"))
+}
+
+fn write_executable(path: &Path, contents: &str) -> std::io::Result<()> {
+    use std::io::Write;
+    let mut opts = std::fs::OpenOptions::new();
+    opts.write(true).create_new(true).truncate(true);
+    #[cfg(unix)]
+    {
+        use std::os::unix::fs::OpenOptionsExt;
+        opts.mode(0o755);
+    }
+    opts.open(path)?.write_all(contents.as_bytes())
 }
 
 fn create_talk_dir(
@@ -126,32 +138,19 @@ fn create_talk_dir(
     venue: Option<&str>,
     steps: usize,
 ) -> Result<PathBuf, Box<dyn std::error::Error>> {
-    let dirname = title_to_dirname(title)?;
-    let talk_path = parent.join(&dirname);
+    let talk_path = parent.join(title_to_dirname(title)?);
     if talk_path.exists() {
         return Err(format!("Directory {} already exists", talk_path.display()).into());
     }
     std::fs::create_dir(&talk_path)?;
     std::fs::write(talk_path.join("README.md"), readme_skeleton(title, venue))?;
-    std::fs::write(
-        talk_path.join("pre-setup.sh"),
-        pre_setup_script_skeleton(venue)?,
-    )?;
+    write_executable(&talk_path.join("pre-setup.sh"), &pre_setup_script_skeleton(venue)?)?;
+
     for n in 1..=steps {
         let step_path = talk_path.join(format!("{n}-TODO"));
         std::fs::create_dir(&step_path)?;
-        let setup_path = step_path.join("setup.sh");
-        let cleanup_path = step_path.join("cleanup.sh");
-        std::fs::write(&setup_path, setup_script_skeleton())?;
-        std::fs::write(&cleanup_path, setup_script_skeleton())?;
-
-        #[cfg(unix)]
-        {
-            use std::os::unix::fs::PermissionsExt;
-            let perms = std::fs::Permissions::from_mode(0o755);
-            std::fs::set_permissions(&setup_path, perms.clone())?;
-            std::fs::set_permissions(&cleanup_path, perms)?;
-        }
+        write_executable(&step_path.join("setup.sh"), &setup_script_skeleton())?;
+        write_executable(&step_path.join("cleanup.sh"), &setup_script_skeleton())?;
     }
     Ok(talk_path)
 }
@@ -219,7 +218,7 @@ mod tests {
     #[test]
     fn pre_setup_script_skeleton_with_venue_uses_slug() {
         let got = pre_setup_script_skeleton(Some("KCD Budapest")).unwrap();
-        assert!(got.contains(r#"CLUSTER_NAME="kcd-budapest""#));
+        assert!(got.contains(r#"CLUSTER_NAME="kcd-budapest-demo""#));
         assert!(!got.contains("TODO-CLUSTER"));
     }
 

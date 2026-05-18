@@ -30,3 +30,5 @@ setup_cluster() {
 }
 
 setup_cluster
+
+log "Setup complete!"
