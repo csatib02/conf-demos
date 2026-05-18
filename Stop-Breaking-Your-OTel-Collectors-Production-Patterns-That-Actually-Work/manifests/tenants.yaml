@@ -1,0 +1,32 @@
+---
+apiVersion: telemetry.kube-logging.dev/v1alpha1
+kind: Tenant
+metadata:
+  name: tenant-a
+  labels:
+    collect: "true"
+spec:
+  persistenceConfig:
+    enableFileStorage: true
+  subscriptionNamespaceSelectors:
+    - matchLabels:
+        tenant: a
+  logSourceNamespaceSelectors:
+    - matchLabels:
+        tenant: a
+---
+apiVersion: telemetry.kube-logging.dev/v1alpha1
+kind: Tenant
+metadata:
+  name: tenant-b
+  labels:
+    collect: "true"
+spec:
+  persistenceConfig:
+    enableFileStorage: true
+  subscriptionNamespaceSelectors:
+    - matchLabels:
+        tenant: b
+  logSourceNamespaceSelectors:
+    - matchLabels:
+        tenant: b
