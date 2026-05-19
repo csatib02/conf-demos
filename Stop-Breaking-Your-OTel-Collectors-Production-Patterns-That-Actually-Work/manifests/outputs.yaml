@@ -1,0 +1,56 @@
+---
+apiVersion: telemetry.kube-logging.dev/v1alpha1
+kind: Output
+metadata:
+  name: tenant-a-elasticsearch
+  namespace: tenant-a
+spec:
+  elasticsearch:
+    endpoint: https://elasticsearch-master.elasticsearch.svc.cluster.local:9200
+    logs_index: tenant-a-logs
+    tls:
+      insecure_skip_verify: true
+  authentication:
+    basicAuth:
+      secretRef:
+        name: elasticsearch-master-credentials
+        namespace: elasticsearch
+      usernameField: username
+      passwordField: password
+---
+apiVersion: telemetry.kube-logging.dev/v1alpha1
+kind: Output
+metadata:
+  name: tenant-b-elasticsearch
+  namespace: tenant-b
+spec:
+  elasticsearch:
+    endpoint: https://elasticsearch-master.elasticsearch.svc.cluster.local:9200
+    logs_index: tenant-b-logs
+    tls:
+      insecure_skip_verify: true
+  authentication:
+    basicAuth:
+      secretRef:
+        name: elasticsearch-master-credentials
+        namespace: elasticsearch
+      usernameField: username
+      passwordField: password
+---
+apiVersion: telemetry.kube-logging.dev/v1alpha1
+kind: Output
+metadata:
+  name: shared-file-archive
+  namespace: tenant-a
+spec:
+  file:
+    path: /var/lib/otelcol/archive/logs.json
+---
+apiVersion: telemetry.kube-logging.dev/v1alpha1
+kind: Output
+metadata:
+  name: shared-file-archive
+  namespace: tenant-b
+spec:
+  file:
+    path: /var/lib/otelcol/archive/logs.json

@@ -1,0 +1,26 @@
+---
+apiVersion: telemetry.kube-logging.dev/v1alpha1
+kind: Subscription
+metadata:
+  name: tenant-a-logs
+  namespace: tenant-a
+spec:
+  condition: "true"
+  outputs:
+    - name: tenant-a-elasticsearch
+      namespace: tenant-a
+    - name: shared-file-archive
+      namespace: tenant-a
+---
+apiVersion: telemetry.kube-logging.dev/v1alpha1
+kind: Subscription
+metadata:
+  name: tenant-b-logs
+  namespace: tenant-b
+spec:
+  condition: "true"
+  outputs:
+    - name: tenant-b-elasticsearch
+      namespace: tenant-b
+    - name: shared-file-archive
+      namespace: tenant-b
