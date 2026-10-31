@@ -15,3 +15,4 @@ We'll cover real operational challenges: graceful shutdown to avoid data loss, m
 ## Presented at
 
 - May 21, 2026 @ [KCD Czech & Slovak - Prague](https://community2.cncf.io/events/details/cncf-kcd-czech-slovak-presents-kcd-czech-amp-slovak-prague-2026/)
+- October 30, 2026 @ [KCD Budapest](https://kcdbudapest.hu/)

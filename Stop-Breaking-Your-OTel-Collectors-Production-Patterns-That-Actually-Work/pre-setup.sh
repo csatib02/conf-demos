@@ -3,8 +3,11 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-CLUSTER_NAME="kcd-czech-slovak-demo"
+CLUSTER_NAME="otel-prod-patterns-demo"
 MANIFESTS="${SCRIPT_DIR}/manifests"
+TELEMETRY_CONTROLLER_VERSION="${TELEMETRY_CONTROLLER_VERSION:-0.6.0}"
+# fixed, because helm re-renders a random one on every upgrade, ES only keeps the first
+ES_PASSWORD="${ES_PASSWORD:-otel-demo-elastic}"
 
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -46,11 +49,13 @@ deploy_elasticsearch() {
         --create-namespace \
         --set imageTag=8.16.1 \
         --set replicas=1 \
+        --set secret.password="${ES_PASSWORD}" \
         --set minimumMasterNodes=1 \
         --set resources.requests.cpu=100m \
         --set resources.requests.memory=512Mi \
         --set persistence.enabled=true \
         --set volumeClaimTemplate.resources.requests.storage=5Gi \
+        --timeout 15m \
         --wait
 
     log "Pre-creating tenant data streams..."
@@ -63,7 +68,7 @@ deploy_elasticsearch() {
             curl -fsS -k -u "${ES_USER}:${ES_PASS}" \
             -X PUT "https://localhost:9200/_index_template/${idx}-tmpl" \
             -H 'Content-Type: application/json' \
-            -d "{\"index_patterns\":[\"${idx}\"],\"data_stream\":{},\"priority\":500}" >/dev/null
+            -d "{\"index_patterns\":[\"${idx}\"],\"data_stream\":{},\"priority\":500,\"template\":{\"settings\":{\"number_of_replicas\":0}}}" >/dev/null
         kubectl exec -n elasticsearch elasticsearch-master-0 -c elasticsearch -- \
             curl -fsS -k -u "${ES_USER}:${ES_PASS}" \
             -X PUT "https://localhost:9200/_data_stream/${idx}" >/dev/null
@@ -77,7 +82,9 @@ deploy_telemetry_controller() {
 
     helm upgrade --install telemetry-controller \
         oci://ghcr.io/kube-logging/helm-charts/telemetry-controller \
+        --version "${TELEMETRY_CONTROLLER_VERSION}" \
         --namespace telemetry-controller-system \
+        --timeout 10m \
         --create-namespace \
         --wait
 
@@ -161,7 +168,7 @@ verify_pipeline() {
     kubectl exec -n elasticsearch elasticsearch-master-0 -c elasticsearch -- \
         curl -fsS -k -u "${ES_USER}:${ES_PASS}" \
         'https://localhost:9200/tenant-a-logs/_search?size=1&pretty' \
-        | jq '._source' || true
+        | jq '.hits.hits[0]._source' || true
 
     log "Pipeline verification done ✓"
 }
