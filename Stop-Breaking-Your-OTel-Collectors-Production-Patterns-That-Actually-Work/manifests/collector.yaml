@@ -3,9 +3,15 @@ apiVersion: telemetry.kube-logging.dev/v1alpha1
 kind: Collector
 metadata:
   name: cluster
-  namespace: collector
 spec:
   controlNamespace: collector
   tenantSelector:
     matchLabels:
       collect: "true"
+  otelCommonFields:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        memory: 512Mi
